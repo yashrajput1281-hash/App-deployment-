@@ -1,0 +1,6 @@
+{
+  "name": "Akash CSC & CPLO Works",
+  "description": "Digital CSC & CPLO Citizen Services Portal for Service Booking, Status Tracking, and Admin Works Management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
