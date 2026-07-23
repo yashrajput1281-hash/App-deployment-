@@ -229,7 +229,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private suspend fun seedInitialData() {
-        // Seed default sample data if empty
+        // Seed sample customer user if not present, but DO NOT seed fake requests or fake works
         val existingUser = repository.getUserByPhone("9876543210")
         if (existingUser == null) {
             val sampleCustomer = UserEntity(
@@ -239,69 +239,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 role = "CUSTOMER"
             )
             repository.registerUser(sampleCustomer)
-
-            // Seed initial requests
-            val req1 = ServiceRequestEntity(
-                customerName = "Ramesh Kumar",
-                customerPhone = "9876543210",
-                serviceCategory = "UIDAI Services",
-                serviceTitle = "Aadhaar Card Update",
-                customerNotes = "Change of address to VPO Rohtak, Haryana",
-                status = "Completed",
-                feeAmount = 100.0,
-                adminNotes = "Aadhaar address update slip generated",
-                completedAt = System.currentTimeMillis() - 86400000
-            )
-            val req2 = ServiceRequestEntity(
-                customerName = "Ramesh Kumar",
-                customerPhone = "9876543210",
-                serviceCategory = "Travel Services",
-                serviceTitle = "Railway Ticket Booking",
-                customerNotes = "Need 2 Tatkal Sleeper tickets Rohtak to New Delhi on 25th",
-                status = "Pending"
-            )
-            val req3 = ServiceRequestEntity(
-                customerName = "Priya Sharma",
-                customerPhone = "9988776655",
-                serviceCategory = "CPLO Works",
-                serviceTitle = "Parivar Pehchan Patra (PPP)",
-                customerNotes = "Add new child member in Haryana Family ID",
-                status = "In Progress",
-                adminNotes = "Sent for verification to Panchayat Operator"
-            )
-            repository.submitRequest(req1)
-            repository.submitRequest(req2)
-            repository.submitRequest(req3)
-
-            // Seed initial completed work
-            val work1 = WorkRecordEntity(
-                requestId = 1L,
-                workTitle = "Aadhaar Card Update",
-                customerName = "Ramesh Kumar",
-                customerPhone = "9876543210",
-                amountEarned = 100.0,
-                category = "UIDAI Services",
-                remarks = "Address updated & laminated e-Aadhaar print given"
-            )
-            val work2 = WorkRecordEntity(
-                workTitle = "Color Photocopy & Lamination (50 Pages)",
-                customerName = "Suresh Patel",
-                customerPhone = "9123456789",
-                amountEarned = 250.0,
-                category = "Printing & Scanning",
-                remarks = "50 copies color printout + document folder"
-            )
-            val work3 = WorkRecordEntity(
-                workTitle = "Instant PAN Card Application",
-                customerName = "Amit Verma",
-                customerPhone = "9812345678",
-                amountEarned = 150.0,
-                category = "Taxation & Finance",
-                remarks = "Instant e-PAN generated with Aadhaar OTP"
-            )
-            repository.recordWork(work1)
-            repository.recordWork(work2)
-            repository.recordWork(work3)
         }
     }
 }

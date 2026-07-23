@@ -49,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -71,9 +72,19 @@ fun AdminWorksScreen(
 ) {
     var showAddWorkModal by remember { mutableStateOf(false) }
 
-    // Category earnings calculation
-    val categoryEarnings = remember(allWorks) {
-        allWorks.groupBy { it.category }
+    // STRICT FILTER: Only show works that originated from customer service requests
+    val customerWorks = remember(allWorks) {
+        allWorks.filter { it.requestId != null }
+    }
+
+    // Calculate total earnings specifically from customer submitted works
+    val customerWorksEarnings = remember(customerWorks) {
+        customerWorks.sumOf { it.amountEarned }
+    }
+
+    // Category earnings calculation from customer works
+    val categoryEarnings = remember(customerWorks) {
+        customerWorks.groupBy { it.category }
             .mapValues { entry -> entry.value.sumOf { it.amountEarned } }
     }
 
@@ -83,14 +94,15 @@ fun AdminWorksScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxSize()
         ) {
-            // Header Stats Card
+            // Header Stats Card with 3D Elevation
             item {
                 Card(
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedCornerShape(22.dp),
                     colors = CardDefaults.cardColors(containerColor = CscNavy),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
                     modifier = Modifier
                         .fillMaxWidth()
+                        .shadow(12.dp, RoundedCornerShape(22.dp), spotColor = CscNavy)
                         .testTag("works_stats_card")
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
@@ -101,7 +113,7 @@ fun AdminWorksScreen(
                         ) {
                             Column {
                                 Text(
-                                    text = "WORKS & REVENUE LEDGER",
+                                    text = "CUSTOMER SENT WORKS LEDGER",
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         color = CscGold,
                                         fontWeight = FontWeight.Bold,
@@ -109,8 +121,8 @@ fun AdminWorksScreen(
                                     )
                                 )
                                 Text(
-                                    text = "Total Money Earned",
-                                    style = MaterialTheme.typography.bodyMedium.copy(color = Color.White.copy(alpha = 0.8f))
+                                    text = "Revenue from Customer Requests",
+                                    style = MaterialTheme.typography.bodyMedium.copy(color = Color.White.copy(alpha = 0.85f))
                                 )
                             }
 
@@ -118,7 +130,8 @@ fun AdminWorksScreen(
                                 modifier = Modifier
                                     .size(44.dp)
                                     .clip(CircleShape)
-                                    .background(CscGold),
+                                    .background(CscGold)
+                                    .shadow(4.dp, CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
@@ -130,12 +143,12 @@ fun AdminWorksScreen(
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         Text(
-                            text = "₹${String.format(Locale.US, "%.2f", totalEarnings)}",
+                            text = "₹${String.format(Locale.US, "%.2f", customerWorksEarnings)}",
                             style = MaterialTheme.typography.headlineLarge.copy(
-                                fontWeight = FontWeight.Bold,
+                                fontWeight = FontWeight.ExtraBold,
                                 color = CscGold
                             )
                         )
@@ -148,7 +161,7 @@ fun AdminWorksScreen(
                         ) {
                             Surface(
                                 color = Color(0xFF1E3A8A),
-                                shape = RoundedCornerShape(12.dp),
+                                shape = RoundedCornerShape(14.dp),
                                 modifier = Modifier.weight(1f)
                             ) {
                                 Row(
@@ -159,16 +172,16 @@ fun AdminWorksScreen(
                                         imageVector = Icons.Default.CheckCircle,
                                         contentDescription = null,
                                         tint = CscGreen,
-                                        modifier = Modifier.size(20.dp)
+                                        modifier = Modifier.size(22.dp)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Column {
                                         Text(
-                                            text = "Completed Works",
-                                            style = MaterialTheme.typography.labelSmall.copy(color = Color.Gray)
+                                            text = "Customer Completed Works",
+                                            style = MaterialTheme.typography.labelSmall.copy(color = Color.LightGray)
                                         )
                                         Text(
-                                            text = "${allWorks.size} Works",
+                                            text = "${customerWorks.size} Customer Works",
                                             style = MaterialTheme.typography.titleMedium.copy(
                                                 fontWeight = FontWeight.Bold,
                                                 color = Color.White
@@ -187,7 +200,7 @@ fun AdminWorksScreen(
                 item {
                     Column {
                         Text(
-                            text = "SERVICE CATEGORY EARNINGS",
+                            text = "CUSTOMER SERVICE EARNINGS BY CATEGORY",
                             style = MaterialTheme.typography.titleSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = Color.Gray,
@@ -199,11 +212,12 @@ fun AdminWorksScreen(
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             items(categoryEarnings.toList()) { (category, total) ->
                                 Card(
-                                    shape = RoundedCornerShape(14.dp),
+                                    shape = RoundedCornerShape(16.dp),
                                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                                    modifier = Modifier.shadow(4.dp, RoundedCornerShape(16.dp), spotColor = Color.Gray)
                                 ) {
-                                    Column(modifier = Modifier.padding(12.dp)) {
+                                    Column(modifier = Modifier.padding(14.dp)) {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             Icon(
                                                 imageVector = Icons.Default.Category,
@@ -224,7 +238,7 @@ fun AdminWorksScreen(
                                         Text(
                                             text = "₹${String.format(Locale.US, "%.2f", total)}",
                                             style = MaterialTheme.typography.titleMedium.copy(
-                                                fontWeight = FontWeight.Bold,
+                                                fontWeight = FontWeight.ExtraBold,
                                                 color = CscGreen
                                             )
                                         )
@@ -236,7 +250,7 @@ fun AdminWorksScreen(
                 }
             }
 
-            // Detailed Works Information List
+            // Detailed Works Information List (Filtered to only customer sent works)
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -244,39 +258,39 @@ fun AdminWorksScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "INFORMATION OF COMPLETED WORKS (${allWorks.size})",
+                        text = "WORKS SENT BY CUSTOMERS (${customerWorks.size})",
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
-                            color = Color.Gray,
+                            color = Color.DarkGray,
                             letterSpacing = 1.sp
                         )
                     )
                 }
             }
 
-            if (allWorks.isEmpty()) {
+            if (customerWorks.isEmpty()) {
                 item {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(24.dp),
+                            .padding(28.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "No work records logged yet. Complete customer service requests or record direct works.",
+                            text = "No works sent by customers completed yet.\nComplete customer service requests from the 'Raised Services' tab to log works here.",
                             style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray),
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                     }
                 }
             } else {
-                items(allWorks) { work ->
+                items(customerWorks) { work ->
                     WorkItemCard(work)
                 }
             }
         }
 
-        // Floating Action Button to Add Offline/Manual Work
+        // Floating Action Button to Add Manual Customer Work
         FloatingActionButton(
             onClick = { showAddWorkModal = true },
             containerColor = CscGold,
@@ -285,6 +299,7 @@ fun AdminWorksScreen(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(20.dp)
+                .shadow(8.dp, CircleShape, spotColor = CscGold)
                 .testTag("add_manual_work_fab")
         ) {
             Row(modifier = Modifier.padding(horizontal = 16.dp)) {
